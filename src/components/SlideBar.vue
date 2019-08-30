@@ -1,107 +1,123 @@
 <template>
-    <div class="autherinfo">
-        <div class="authersummary">
-            <div class="topbar">作者</div>
-            <router-link :to="{
-            name:'user_info',
+<div class="authorinfo">
+  <div class="authorsummary">
+    <div class="topbar_first">作者</div>
+    <router-link :to="{
+      name:'user_info',
+      params:{
+        id:userinfo.loginname
+      }
+    }">
+      <img :src="userinfo.avatar_url" >
+    </router-link>
+    <router-link :to="{
+      name:'user_info',
+      params:{
+        id:userinfo.loginname
+      }
+    }">
+      <span class="loginname">{{userinfo.loginname}}</span>
+    </router-link>
+    <p class="user_profile">积分:&nbsp{{userinfo.score}}</p>
+  </div>
+  <div class="recent_topics">
+    <div class="topbar">作者最近主题</div>
+    <div class="inner">
+      <ul>
+        <li v-for="list in topicLimitBy5">
+          <router-link :to="{
+            name:'post_content',
             params:{
-                name:userinfo.loginname
+              id:list.id,
+              name:list.author.loginname
             }
-            }">
-                <img :src="userinfo.avatar_url" alt="">
-            </router-link>
-        </div>
-        <div class="author_topic">
-             <div class="topbar">作者最近主题</div>
-             <ul>
-                 <li v-for="list in topcilimitby5 ">
-                     <router-link :to="{
-                         name:'post_content',
-                         params:{
-                             id:list.id,
-                            name:list.author.loginname
-                         }
-                     }">
-                        {{list.title}}
-                     </router-link>
-                 </li>
-             </ul>
-        </div>
-        <div class="author_replies">
-             <div class="topbar">作者最近回复</div>
-             <ul>
-                 <li v-for="list in replylimitby5 ">
-                     <router-link :to="{
-                         name:'post_content',
-                         params:{
-                             id:list.id,
-                            name:list.author.loginname
-                         }
-                     }">
-                        {{list.title}}
-                     </router-link>
-                 </li>
-             </ul>
-        </div>
+          }">
+            {{list.title}}
+          </router-link>
+        </li>
+      </ul>
     </div>
-    
-   
+  </div>
+  <div class="recent_replies">
+    <div class="topbar">作者最近回复</div>
+    <div class="inner">
+      <ul>
+        <li v-for="list in replyLimitBy5">
+          <router-link :to="{
+            name:'post_content',
+            params:{
+              id:list.id,
+              name:list.author.loginname
+            }
+          }">
+            {{list.title}}
+          </router-link>
+        </li>
+      </ul>
+    </div> 
+  </div>
+</div>
 </template>
-
 
 <script>
 export default {
-    name:"SlideBar",
-    data(){
-        return {
-            userinfo:{}
-        }
-    },
-    methods:{
-         getData(){
-              this.$http.get(`https://cnodejs.org/api/v1/user/${this.$route.params.name}`)
-                .then(res=>{
-                  this.isLoading = false; //加载成功，去除动画
-                  this.userinfo = res.data.data;
-                })
-                .catch(function (err) {
-                  //处理返回失败后的问题
-                  console.log(err)
-                })
-          }
-     
-    },
-    computed:{
-        topcilimitby5(){
-          if(this.userinfo.recent_topics){
-            return this.userinfo.recent_topics.slice(0,5);
-          }
-        },
-        replylimitby5(){
-          if(this.userinfo.recent_replies){
-            return this.userinfo.recent_replies.slice(0,5);
-          }
-        }
-      
-    },
-          beforeMount(){
-            this.isLoading = true;//加载成功之前显示加载动画
-            this.getData();//在页面加载之前获取数据
+  name:'SlideBar',
+  data(){
+    return{
+      userinfo:{}
+    }
+   
+  },
+  computed:{
+    topicLimitBy5(){
+      if(this.userinfo.recent_topics){
+        return this.userinfo.recent_topics.slice(0,5)
       }
+    },
+    replyLimitBy5(){
+      if(this.userinfo.recent_replies){
+        return this.userinfo.recent_replies.slice(0,5)
+      }
+    }
+  },
+  methods:{
+    getData() {
+      this.$http
+        .get(`https://cnodejs.org/api/v1/user/${this.$route.params.name}`)
+        .then(res => {
+          this.userinfo = res.data.data;
+          console.log(res);
+        })
+        .catch(function(err) {
+          console.log(err);
+        });
+    }
+  },
+  beforeMount(){
+    this.getData()
+  }
 }
 </script>
 
 <style scoped>
- .autherinfo {
+ .authorsummary, .recent_replies, .recent_topics {
+    background-color: #fff;
+  }
+  .authorinfo {
     width: 328px;
-    position: absolute;
-    right: 40px;
-    top: 48px;;
+    float: right;
     margin-top: 0;
-    margin-right: 0;
   }
   li{
-    padding: 3px 0 ;
+    white-space: nowrap;
+    max-width: 270px;
+    line-height: 30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .user_profile{
+    padding: 10px;
+    font-size: 13px;
   }
   .recent_replies ul, .recent_topics ul {
     margin-top: 0px;
@@ -109,19 +125,28 @@ export default {
     list-style: none;
     padding-left: 14px;
   }
-
+  .inner{
+    padding: 10px;
+  }
   ul a {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
     font-size: 12px;
     text-decoration: none;
     color: #778087;
   }
 
-  .topbar {
-    padding: 10px;
+  .topbar{
+    padding: 13px;
     background-color: #f6f6f6;
-    height: 16px;
     font-size: 12px;
-    margin-top: 10px;
+  }
+  .topbar_first{
+    margin: auto;
+    padding: 13px;
+    background-color: #f6f6f6;
+    font-size: 12px;
   }
 
   img {
@@ -137,6 +162,8 @@ export default {
     margin-top: 22px;
     margin-right: 159px;
     font-size: 14px;
+    color: #666;
+    text-decoration: none;
   }
 
   .loginname a {
@@ -144,7 +171,7 @@ export default {
     color: #778087;
   }
 
-  .authersummay .topbar {
+  .authorsummay .topbar {
     margin-top: 0px;
   }
 </style>
